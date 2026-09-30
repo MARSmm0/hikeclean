@@ -1,9 +1,12 @@
+// src/main/index.ts
 import { app, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'node:path'
 import type { Channel, IpcMap, IpcResult } from '../shared/types'
 import * as opt from './optimizer'
+import { SettingsManager } from './settings/SettingsManager'
 
 const startupStore = (): string => join(app.getPath('userData'), 'startup-disabled.json')
+const settings = new SettingsManager()
 
 function handle<K extends Channel>(
   ch: K,
@@ -24,6 +27,15 @@ function registerIpc(): void {
   handle('startup:list', () => opt.listStartup(startupStore()))
   handle('startup:set', (name, enabled) => opt.setStartup(startupStore(), name, enabled))
   handle('boost:run', () => opt.boost())
+
+  // Settings
+  handle('settings:getAll', () => settings.getAll())
+  handle('settings:set', (key, value) => {
+    settings.set(key as never, value as never)
+  })
+  handle('settings:reset', () => {
+    settings.reset()
+  })
 }
 
 function createWindow(): void {
