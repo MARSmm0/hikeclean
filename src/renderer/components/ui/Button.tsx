@@ -18,9 +18,9 @@ const variants: Record<Variant, React.CSSProperties> = {
 }
 
 const sizes: Record<Size, React.CSSProperties> = {
-  sm: { padding: '6px 12px', fontSize: 13 },
-  md: { padding: '9px 16px', fontSize: 14 },
-  lg: { padding: '12px 24px', fontSize: 16 },
+  sm: { padding: '6px 12px', fontSize: 12.5 },
+  md: { padding: '8px 14px', fontSize: 13.5 },
+  lg: { padding: '11px 22px', fontSize: 15 },
 }
 
 export const Button: React.FC<ButtonProps> = ({
@@ -40,7 +40,8 @@ export const Button: React.FC<ButtonProps> = ({
         ...variants[variant],
         ...sizes[size],
         borderRadius: 8,
-        fontWeight: 600,
+        fontWeight: 500,
+        letterSpacing: '-0.005em',
         fontFamily: 'inherit',
         cursor: disabled || loading ? 'default' : 'pointer',
         opacity: disabled || loading ? 0.5 : 1,

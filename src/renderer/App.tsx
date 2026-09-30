@@ -9,11 +9,11 @@ import { Card } from './components/ui/Card'
 type Tab = 'home' | 'clean' | 'proc' | 'startup' | 'boost'
 
 const TABS: TabItem<Tab>[] = [
-  { id: 'home',    label: 'Огляд',          icon: '◐' },
-  { id: 'clean',   label: 'Очищення',       icon: '✦' },
-  { id: 'proc',    label: 'Процеси',        icon: '▤' },
+  { id: 'home',    label: 'Огляд',            icon: '◐' },
+  { id: 'clean',   label: 'Очищення',         icon: '✦' },
+  { id: 'proc',    label: 'Процеси',          icon: '☰' },
   { id: 'startup', label: 'Автозавантаження', icon: '↻' },
-  { id: 'boost',   label: 'Прискорення',    icon: '⚡' },
+  { id: 'boost',   label: 'Прискорення',      icon: '↗' },
 ]
 
 const fmt = (b: number): string =>
@@ -246,7 +246,9 @@ function Boost() {
       </Button>
       {log.length > 0 && (
         <div style={{ marginTop: 16 }}>
-          {log.map((l, i) => <p key={i} style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{l}</p>)}
+          {log.map((l, i) => (
+            <p key={i} style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{l}</p>
+          ))}
         </div>
       )}
     </Card>
