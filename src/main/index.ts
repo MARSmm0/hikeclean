@@ -4,9 +4,18 @@ import { join } from 'node:path'
 import type { Channel, IpcMap, IpcResult } from '../shared/types'
 import * as opt from './optimizer'
 import { SettingsManager } from './settings/SettingsManager'
+import { MalwareScanner } from './scanner/MalwareScanner'
+import { Scheduler } from './scheduler/Scheduler'
+import { BackupManager } from './backup/BackupManager'
+import { DiskAnalyzer } from './disk/DiskAnalyzer'
 
 const startupStore = (): string => join(app.getPath('userData'), 'startup-disabled.json')
+
 const settings = new SettingsManager()
+const scanner = new MalwareScanner()
+const scheduler = new Scheduler()
+const backup = new BackupManager(app.getPath('userData'))
+const disk = new DiskAnalyzer()
 
 function handle<K extends Channel>(
   ch: K,
@@ -28,24 +37,39 @@ function registerIpc(): void {
   handle('startup:set', (name, enabled) => opt.setStartup(startupStore(), name, enabled))
   handle('boost:run', () => opt.boost())
 
-  // Settings
   handle('settings:getAll', () => settings.getAll())
-  handle('settings:set', (key, value) => {
-    settings.set(key as never, value as never)
+  handle('settings:set', (key, value) => { settings.set(key as never, value as never) })
+  handle('settings:reset', () => { settings.reset() })
+
+  handle('scan:file', (p) => scanner.scanFile(p))
+  handle('scan:directory', (dir) => scanner.scanDirectory(dir, (progress) => {
+    BrowserWindow.getAllWindows()[0]?.webContents.send('scan:progress', progress)
+  }))
+  handle('scan:setApiKey', (key) => {
+    scanner.setApiKey(key)
+    settings.set('virusTotalApiKey' as never, key as never)
   })
-  handle('settings:reset', () => {
-    settings.reset()
-  })
+
+  handle('schedule:list', () => scheduler.getTasks())
+  handle('schedule:add', (t) => { scheduler.addTask(t) })
+  handle('schedule:remove', (id) => { scheduler.removeTask(id) })
+
+  handle('backup:list', () => backup.listBackups())
+  handle('backup:create', (files, label) => backup.createBackup(files, label))
+  handle('backup:restore', (id) => backup.restoreBackup(id))
+  handle('backup:delete', (id) => backup.deleteBackup(id))
+
+  handle('disk:analyze', (root) => disk.analyze(root))
 }
 
 function createWindow(): void {
   const win = new BrowserWindow({
     width: 1100, height: 720, minWidth: 900, minHeight: 600, show: false,
-    backgroundColor: '#12141a', autoHideMenuBar: true,
+    backgroundColor: '#1c1c1e', autoHideMenuBar: true,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
-      contextIsolation: true, nodeIntegration: false, sandbox: true
-    }
+      contextIsolation: true, nodeIntegration: false, sandbox: true,
+    },
   })
   win.on('ready-to-show', () => win.show())
   const url = process.env['ELECTRON_RENDERER_URL']
@@ -56,6 +80,7 @@ function createWindow(): void {
 app.whenReady().then(() => {
   registerIpc()
   createWindow()
+  scanner.setApiKey(settings.get('virusTotalApiKey' as never) as never || '')
   app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow() })
 })
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit() })

@@ -5,15 +5,26 @@ import { Sidebar, type TabItem } from './components/Sidebar'
 import { useToast } from './components/ui/Toast'
 import { Button } from './components/ui/Button'
 import { Card } from './components/ui/Card'
+import { Security } from './pages/Security'
+import { Scheduler } from './pages/Scheduler'
+import { Backups } from './pages/Backups'
+import { Disk } from './pages/Disk'
+import { useTheme } from './theme/ThemeProvider'
 
-type Tab = 'home' | 'clean' | 'proc' | 'startup' | 'boost'
+type Tab =
+  | 'home' | 'clean' | 'proc' | 'startup' | 'boost'
+  | 'security' | 'scheduler' | 'backups' | 'disk'
 
 const TABS: TabItem<Tab>[] = [
-  { id: 'home',    label: 'Огляд',            icon: '◐' },
-  { id: 'clean',   label: 'Очищення',         icon: '✦' },
-  { id: 'proc',    label: 'Процеси',          icon: '☰' },
-  { id: 'startup', label: 'Автозавантаження', icon: '↻' },
-  { id: 'boost',   label: 'Прискорення',      icon: '↗' },
+  { id: 'home',      label: 'Огляд',            icon: '◐' },
+  { id: 'clean',     label: 'Очищення',         icon: '✦' },
+  { id: 'proc',      label: 'Процеси',          icon: '☰' },
+  { id: 'startup',   label: 'Автозавантаження', icon: '↻' },
+  { id: 'boost',     label: 'Прискорення',      icon: '↗' },
+  { id: 'security',  label: 'Безпека',          icon: '◆' },
+  { id: 'scheduler', label: 'Планувальник',     icon: '◷' },
+  { id: 'backups',   label: 'Бекапи',           icon: '⎘' },
+  { id: 'disk',      label: 'Диск',             icon: '▣' },
 ]
 
 const fmt = (b: number): string =>
@@ -117,12 +128,7 @@ function Clean() {
         </label>
       ))}
       <div className="row" style={{ gap: 8, paddingTop: 16 }}>
-        <Button
-          variant="primary"
-          disabled={busy || sel.size === 0}
-          loading={busy}
-          onClick={() => void clean()}
-        >
+        <Button variant="primary" disabled={busy || sel.size === 0} loading={busy} onClick={() => void clean()}>
           Очистити ({fmt(total)})
         </Button>
         <Button variant="ghost" disabled={busy} onClick={() => void scan()}>
@@ -161,14 +167,10 @@ function Procs() {
     <Card>
       {list.map((p) => (
         <div className="row" key={p.pid}>
-          <span className="grow">
-            {p.name} <span className="dim">#{p.pid}</span>
-          </span>
+          <span className="grow">{p.name} <span className="dim">#{p.pid}</span></span>
           <span className="dim">{p.cpu.toFixed(1)}%</span>
           <span className="dim">{fmt(p.memBytes)}</span>
-          <Button variant="danger" size="sm" onClick={() => void kill(p)}>
-            Завершити
-          </Button>
+          <Button variant="danger" size="sm" onClick={() => void kill(p)}>Завершити</Button>
         </div>
       ))}
     </Card>
@@ -204,11 +206,7 @@ function Startup() {
             {i.name}
             <div className="dim">{i.command}</div>
           </span>
-          <Button
-            variant={i.enabled ? 'ghost' : 'primary'}
-            size="sm"
-            onClick={() => void toggle(i)}
-          >
+          <Button variant={i.enabled ? 'ghost' : 'primary'} size="sm" onClick={() => void toggle(i)}>
             {i.enabled ? 'Вимкнути' : 'Увімкнути'}
           </Button>
         </div>
@@ -258,17 +256,22 @@ function Boost() {
 // ==================== APP ====================
 export function App() {
   const [tab, setTab] = useState<Tab>('home')
+  const { settings } = useTheme()
 
   return (
     <div className="app">
       <Sidebar tabs={TABS} active={tab} onChange={setTab} />
       <main>
         <h2>{TABS.find((t) => t.id === tab)?.label}</h2>
-        {tab === 'home'    && <Home />}
-        {tab === 'clean'   && <Clean />}
-        {tab === 'proc'    && <Procs />}
-        {tab === 'startup' && <Startup />}
-        {tab === 'boost'   && <Boost />}
+        {tab === 'home'      && <Home />}
+        {tab === 'clean'     && <Clean />}
+        {tab === 'proc'      && <Procs />}
+        {tab === 'startup'   && <Startup />}
+        {tab === 'boost'     && <Boost />}
+        {tab === 'security'  && <Security settings={settings} />}
+        {tab === 'scheduler' && <Scheduler />}
+        {tab === 'backups'   && <Backups />}
+        {tab === 'disk'      && <Disk />}
       </main>
     </div>
   )

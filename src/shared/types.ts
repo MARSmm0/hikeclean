@@ -8,14 +8,29 @@ export interface ProcRow { pid: number; name: string; cpu: number; memBytes: num
 export interface StartupItem { name: string; command: string; enabled: boolean }
 
 export type Theme = 'light' | 'dark' | 'system'
-
 export interface Settings {
   theme: Theme
   language: string
+  virusTotalApiKey: string
   launchAtStartup: boolean
   minimizeToTray: boolean
   performanceMonitor: { enabled: boolean; intervalMs: number }
   cleaning: { autoBackup: boolean; confirmBeforeDelete: boolean }
+}
+
+export type ThreatLevel = 'clean' | 'suspicious' | 'malicious' | 'error'
+export interface ScanResult { file: string; status: ThreatLevel; details?: string; hash?: string }
+export interface ScanProgress { current: number; total: number; currentFile: string; threatsFound: number; finished: boolean }
+
+export interface ScheduledTask {
+  id: string; name: string; cronExpression: string
+  action: 'scan' | 'clean' | 'boost'; enabled: boolean
+}
+
+export interface BackupMeta { id: string; label: string; createdAt: number; files: string[] }
+
+export interface DiskEntry {
+  name: string; path: string; size: number; isDir: boolean; children?: DiskEntry[]
 }
 
 export interface IpcMap {
@@ -30,6 +45,17 @@ export interface IpcMap {
   'settings:getAll': { args: []; result: Settings }
   'settings:set': { args: [key: keyof Settings, value: Settings[keyof Settings]]; result: void }
   'settings:reset': { args: []; result: void }
+  'scan:file': { args: [p: string]; result: ScanResult }
+  'scan:directory': { args: [dir: string]; result: ScanResult[] }
+  'scan:setApiKey': { args: [key: string]; result: void }
+  'schedule:list': { args: []; result: ScheduledTask[] }
+  'schedule:add': { args: [t: ScheduledTask]; result: void }
+  'schedule:remove': { args: [id: string]; result: void }
+  'backup:list': { args: []; result: BackupMeta[] }
+  'backup:create': { args: [files: string[], label: string]; result: string }
+  'backup:restore': { args: [id: string]; result: void }
+  'backup:delete': { args: [id: string]; result: void }
+  'disk:analyze': { args: [root: string]; result: DiskEntry }
 }
 export type Channel = keyof IpcMap
 

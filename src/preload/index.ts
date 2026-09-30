@@ -8,12 +8,16 @@ const allowed: Channel[] = [
   'startup:list', 'startup:set',
   'boost:run',
   'settings:getAll', 'settings:set', 'settings:reset',
+  'scan:file', 'scan:directory', 'scan:setApiKey',
+  'schedule:list', 'schedule:add', 'schedule:remove',
+  'backup:list', 'backup:create', 'backup:restore', 'backup:delete',
+  'disk:analyze',
 ]
 
 const api: Api = {
   invoke: (ch, ...args) => {
     if (!allowed.includes(ch)) return Promise.resolve({ ok: false, error: 'Channel not allowed' })
     return ipcRenderer.invoke(ch, ...args)
-  }
+  },
 }
 contextBridge.exposeInMainWorld('api', api)
