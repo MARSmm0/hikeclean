@@ -1,18 +1,28 @@
 appId: com.lukyan.hike
 productName: Hike
+
 directories:
   output: release
+  buildResources: build
+
 files:
-  - out/**
+  - out/**/*
+  - "!**/*.map"
+  - "!**/*.ts"
+
 win:
-  target: [nsis, portable]
-  requestedExecutionLevel: asInvoker
+  target:
+    - nsis
+    - portable
+  signAndEditExecutable: false
+
 nsis:
   oneClick: false
+  perMachine: false
   allowToChangeInstallationDirectory: true
   createDesktopShortcut: true
-mac:
-  target: [dmg, zip]
-linux:
-  target: [AppImage, deb]
-  category: Utility
+  createStartMenuShortcut: true
+  shortcutName: Hike
+
+portable:
+  artifactName: Hike ${version}.exe
