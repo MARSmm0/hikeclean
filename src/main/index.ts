@@ -8,6 +8,7 @@ import { MalwareScanner } from './scanner/MalwareScanner'
 import { Scheduler } from './scheduler/Scheduler'
 import { BackupManager } from './backup/BackupManager'
 import { DiskAnalyzer } from './disk/DiskAnalyzer'
+import { getExtendedStats, listDrives } from './systemInfo'
 
 const startupStore = (): string => join(app.getPath('userData'), 'startup-disabled.json')
 
@@ -29,6 +30,7 @@ function handle<K extends Channel>(
 
 function registerIpc(): void {
   handle('sys:stats', () => opt.getStats())
+  handle('sys:extended', () => getExtendedStats())
   handle('rules:scan', () => opt.scanRules())
   handle('rules:clean', (ids) => opt.cleanRules(ids))
   handle('proc:list', () => opt.listProcesses())
@@ -60,6 +62,7 @@ function registerIpc(): void {
   handle('backup:delete', (id) => backup.deleteBackup(id))
 
   handle('disk:analyze', (root) => disk.analyze(root))
+  handle('disk:listDrives', () => listDrives())
 }
 
 function createWindow(): void {
@@ -80,7 +83,8 @@ function createWindow(): void {
 app.whenReady().then(() => {
   registerIpc()
   createWindow()
-  scanner.setApiKey(settings.get('virusTotalApiKey' as never) as never || '')
+  const savedKey = settings.get('virusTotalApiKey')
+  if (savedKey) scanner.setApiKey(savedKey)
   app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow() })
 })
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit() })

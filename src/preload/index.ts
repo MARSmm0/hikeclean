@@ -3,7 +3,7 @@ import { contextBridge, ipcRenderer } from 'electron'
 import type { Api, Channel } from '@shared/types'
 
 const allowed: Channel[] = [
-  'sys:stats', 'rules:scan', 'rules:clean',
+  'sys:stats', 'sys:extended', 'rules:scan', 'rules:clean',
   'proc:list', 'proc:kill',
   'startup:list', 'startup:set',
   'boost:run',
@@ -11,7 +11,7 @@ const allowed: Channel[] = [
   'scan:file', 'scan:directory', 'scan:setApiKey',
   'schedule:list', 'schedule:add', 'schedule:remove',
   'backup:list', 'backup:create', 'backup:restore', 'backup:delete',
-  'disk:analyze',
+  'disk:analyze', 'disk:listDrives',
 ]
 
 const api: Api = {

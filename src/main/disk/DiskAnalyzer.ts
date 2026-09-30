@@ -1,3 +1,4 @@
+// src/main/disk/DiskAnalyzer.ts
 import fs from 'node:fs/promises'
 import path from 'node:path'
 
@@ -16,14 +17,16 @@ export class DiskAnalyzer {
 
   private async walk(dir: string, depth: number, maxDepth: number): Promise<DiskEntry> {
     const stat = await fs.stat(dir).catch(() => null)
-    if (!stat) return { name: path.basename(dir), path: dir, size: 0, isDir: true, children: [] }
+    if (!stat) {
+      return { name: path.basename(dir) || dir, path: dir, size: 0, isDir: true, children: [] }
+    }
 
     if (!stat.isDirectory()) {
       return { name: path.basename(dir), path: dir, size: stat.size, isDir: false }
     }
 
     if (depth >= maxDepth) {
-      return { name: path.basename(dir), path: dir, size: 0, isDir: true, children: [] }
+      return { name: path.basename(dir) || dir, path: dir, size: 0, isDir: true, children: [] }
     }
 
     const entries = await fs.readdir(dir, { withFileTypes: true }).catch(() => [])

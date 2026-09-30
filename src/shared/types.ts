@@ -33,8 +33,21 @@ export interface DiskEntry {
   name: string; path: string; size: number; isDir: boolean; children?: DiskEntry[]
 }
 
+export interface ExtendedStats {
+  cpu: number; ramUsed: number; ramTotal: number
+  diskUsed: number; diskTotal: number; diskPercent: number
+  netRx: number; netTx: number
+  uptime: number; hostname: string; platform: string
+}
+
+export interface DriveInfo {
+  letter: string; path: string
+  totalSize: number; freeSpace: number; usedPercent: number
+}
+
 export interface IpcMap {
   'sys:stats': { args: []; result: Stats }
+  'sys:extended': { args: []; result: ExtendedStats }
   'rules:scan': { args: []; result: ScanRow[] }
   'rules:clean': { args: [ids: string[]]; result: CleanResult }
   'proc:list': { args: []; result: ProcRow[] }
@@ -56,6 +69,7 @@ export interface IpcMap {
   'backup:restore': { args: [id: string]; result: void }
   'backup:delete': { args: [id: string]; result: void }
   'disk:analyze': { args: [root: string]; result: DiskEntry }
+  'disk:listDrives': { args: []; result: DriveInfo[] }
 }
 export type Channel = keyof IpcMap
 
