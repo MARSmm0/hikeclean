@@ -12,6 +12,9 @@ import { getExtendedStats, listDrives } from './systemInfo'
 import { flushDns, resetNetwork, releaseRenew } from './network'
 import { scanPrivacy, cleanPrivacy } from './privacy'
 import { listServices, setServiceStartType } from './services'
+import { GameModeManager, getDefaultGameProcesses } from './gamemode'
+import { runDiagnostics } from './diagnostics'
+import { PerformanceMonitor } from './monitor'
 
 const startupStore = (): string => join(app.getPath('userData'), 'startup-disabled.json')
 
@@ -20,6 +23,8 @@ const scanner = new MalwareScanner()
 const scheduler = new Scheduler()
 const backup = new BackupManager(app.getPath('userData'))
 const disk = new DiskAnalyzer()
+const gameMode = new GameModeManager(app.getPath('userData'))
+const monitor = new PerformanceMonitor()
 
 function handle<K extends Channel>(
   ch: K,
@@ -76,11 +81,25 @@ function registerIpc(): void {
 
   handle('services:list', () => listServices())
   handle('services:set', (name, startType) => setServiceStartType(name, startType))
+
+  handle('gamemode:getState', () => gameMode.getState())
+  handle('gamemode:activate', (game) => gameMode.activate(game))
+  handle('gamemode:deactivate', () => gameMode.deactivate())
+  handle('gamemode:updateSettings', (patch) => gameMode.updateSettings(patch))
+  handle('gamemode:defaultProcesses', () => getDefaultGameProcesses())
+
+  handle('diag:run', () => runDiagnostics())
+
+  handle('monitor:start', (intervalMs) => { monitor.start(intervalMs ?? 1000) })
+  handle('monitor:stop', () => { monitor.stop() })
+  handle('monitor:isRunning', () => monitor.isRunning())
+  handle('monitor:history', () => monitor.getHistory())
+  handle('monitor:clear', () => { monitor.clearHistory() })
 }
 
 function createWindow(): void {
   const win = new BrowserWindow({
-    width: 1100, height: 720, minWidth: 900, minHeight: 600, show: false,
+    width: 1200, height: 780, minWidth: 950, minHeight: 620, show: false,
     backgroundColor: '#1c1c1e', autoHideMenuBar: true,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
@@ -93,11 +112,28 @@ function createWindow(): void {
   else void win.loadFile(join(__dirname, '../renderer/index.html'))
 }
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
+  await gameMode.init()
   registerIpc()
   createWindow()
+
   const savedKey = settings.get('virusTotalApiKey')
   if (savedKey) scanner.setApiKey(savedKey)
+
+  monitor.on('tick', (snap) => {
+    BrowserWindow.getAllWindows()[0]?.webContents.send('monitor:tick', snap)
+  })
+  gameMode.on('state', (s) => {
+    BrowserWindow.getAllWindows()[0]?.webContents.send('gamemode:changed', s)
+  })
+  gameMode.on('auto-activated', (data) => {
+    BrowserWindow.getAllWindows()[0]?.webContents.send('gamemode:auto', data)
+  })
+
+  const gmState = gameMode.getState()
+  if (gmState.autoDetect) gameMode.startDetection()
+
   app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow() })
 })
+
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit() })

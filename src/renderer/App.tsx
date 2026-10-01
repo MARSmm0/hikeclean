@@ -13,11 +13,14 @@ import { Settings } from './pages/Settings'
 import { Network } from './pages/Network'
 import { Privacy } from './pages/Privacy'
 import { Services } from './pages/Services'
+import { GameMode } from './pages/GameMode'
+import { Diagnostics } from './pages/Diagnostics'
+import { Monitor } from './pages/Monitor'
 
 type Tab =
   | 'clean' | 'network' | 'startup' | 'schedule'
   | 'security' | 'privacy'
-  | 'proc' | 'services' | 'boost'
+  | 'monitor' | 'proc' | 'services' | 'boost' | 'gamemode' | 'diag'
   | 'disk'
   | 'backups'
   | 'settings' | 'home'
@@ -42,21 +45,24 @@ const GROUPS: NavGroup<Tab>[] = [
   {
     id: 'perf', label: 'Продуктивність', icon: '↗',
     items: [
+      { id: 'monitor',  label: 'Монітор',          icon: '◐' },
       { id: 'proc',     label: 'Процеси',          icon: '☰' },
       { id: 'services', label: 'Служби Windows',   icon: '⚙' },
       { id: 'boost',    label: 'Прискорення',      icon: '↗' },
+      { id: 'gamemode', label: 'Ігровий режим',    icon: '🎮' },
+      { id: 'diag',     label: 'Діагностика',      icon: '✚' },
     ],
   },
   {
     id: 'storage', label: 'Сховище', icon: '▣',
     items: [
-      { id: 'disk',       label: 'Аналіз диска',    icon: '▣' },
+      { id: 'disk', label: 'Аналіз диска', icon: '▣' },
     ],
   },
   {
     id: 'activity', label: 'Активність', icon: '◷',
     items: [
-      { id: 'backups',  label: 'Бекапи',            icon: '⎘' },
+      { id: 'backups', label: 'Бекапи', icon: '⎘' },
     ],
   },
 ]
@@ -70,7 +76,9 @@ const TITLES: Record<Tab, string> = {
   home: 'Огляд', clean: 'Очищення системи', network: 'Очищення мережі',
   startup: 'Автозавантаження', schedule: 'Розклади',
   security: 'Сканер malware', privacy: 'Приватність',
+  monitor: 'Монітор продуктивності',
   proc: 'Процеси', services: 'Служби Windows', boost: 'Прискорення',
+  gamemode: 'Ігровий режим', diag: 'Діагностика',
   disk: 'Аналіз диска',
   backups: 'Бекапи',
   settings: 'Налаштування',
@@ -84,19 +92,22 @@ export function App() {
       <Sidebar groups={GROUPS} bottom={BOTTOM} active={tab} onChange={setTab} />
       <main>
         <h2>{TITLES[tab]}</h2>
-        {tab === 'home'       && <Dashboard onNavigate={(t) => setTab(t as Tab)} />}
-        {tab === 'clean'      && <Clean />}
-        {tab === 'network'    && <Network />}
-        {tab === 'startup'    && <Startup />}
-        {tab === 'schedule'   && <Security />}
-        {tab === 'security'   && <Security />}
-        {tab === 'privacy'    && <Privacy />}
-        {tab === 'proc'       && <Processes />}
-        {tab === 'services'   && <Services />}
-        {tab === 'boost'      && <Boost />}
-        {tab === 'disk'       && <Disk />}
-        {tab === 'backups'    && <Backups />}
-        {tab === 'settings'   && <Settings />}
+        {tab === 'home'      && <Dashboard onNavigate={(t) => setTab(t as Tab)} />}
+        {tab === 'clean'     && <Clean />}
+        {tab === 'network'   && <Network />}
+        {tab === 'startup'   && <Startup />}
+        {tab === 'schedule'  && <Security />}
+        {tab === 'security'  && <Security />}
+        {tab === 'privacy'   && <Privacy />}
+        {tab === 'monitor'   && <Monitor />}
+        {tab === 'proc'      && <Processes />}
+        {tab === 'services'  && <Services />}
+        {tab === 'boost'     && <Boost />}
+        {tab === 'gamemode'  && <GameMode />}
+        {tab === 'diag'      && <Diagnostics />}
+        {tab === 'disk'      && <Disk />}
+        {tab === 'backups'   && <Backups />}
+        {tab === 'settings'  && <Settings />}
       </main>
     </div>
   )

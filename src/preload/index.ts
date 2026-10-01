@@ -15,6 +15,10 @@ const allowed: Channel[] = [
   'net:flushDns', 'net:reset', 'net:renew',
   'privacy:scan', 'privacy:clean',
   'services:list', 'services:set',
+  'gamemode:getState', 'gamemode:activate', 'gamemode:deactivate',
+  'gamemode:updateSettings', 'gamemode:defaultProcesses',
+  'diag:run',
+  'monitor:start', 'monitor:stop', 'monitor:isRunning', 'monitor:history', 'monitor:clear',
 ]
 
 const api: Api = {
@@ -23,4 +27,15 @@ const api: Api = {
     return ipcRenderer.invoke(ch, ...args)
   },
 }
+
 contextBridge.exposeInMainWorld('api', api)
+
+contextBridge.exposeInMainWorld('electron', {
+  ipcRenderer: {
+    on: (channel: string, listener: (...args: unknown[]) => void) => {
+      const handler = (_: unknown, ...args: unknown[]): void => listener(...args)
+      ipcRenderer.on(channel, handler)
+      return () => ipcRenderer.removeListener(channel, handler)
+    },
+  },
+})

@@ -77,6 +77,48 @@ export interface ServiceInfo {
   startType: string
 }
 
+export interface GameModeState {
+  active: boolean
+  startedAt: number | null
+  detectedGame: string | null
+  disabledServices: string[]
+  killedProcesses: string[]
+  autoDetect: boolean
+  autoRestoreOnExit: boolean
+  customProcesses: string[]
+}
+
+export type DiagStatus = 'ok' | 'warning' | 'error' | 'info'
+
+export interface DiagCheck {
+  id: string
+  name: string
+  status: DiagStatus
+  message: string
+  details?: string
+}
+
+export interface DiagResult {
+  score: number
+  checks: DiagCheck[]
+  platform: string
+  hostname: string
+  cpus: number
+  totalRam: number
+  uptime: number
+}
+
+export interface MonitorSnapshot {
+  timestamp: number
+  cpu: number
+  ram: number
+  ramUsed: number
+  ramTotal: number
+  load1: number
+  load5: number
+  load15: number
+}
+
 export interface IpcMap {
   'sys:stats': { args: []; result: Stats }
   'sys:extended': { args: []; result: ExtendedStats }
@@ -109,6 +151,20 @@ export interface IpcMap {
   'privacy:clean': { args: [ids: string[]]; result: { freed: number; failed: number } }
   'services:list': { args: []; result: ServiceInfo[] }
   'services:set': { args: [name: string, startType: 'Automatic' | 'Manual' | 'Disabled']; result: void }
+
+  'gamemode:getState': { args: []; result: GameModeState }
+  'gamemode:activate': { args: [game?: string]; result: string[] }
+  'gamemode:deactivate': { args: []; result: string[] }
+  'gamemode:updateSettings': { args: [patch: Partial<GameModeState>]; result: void }
+  'gamemode:defaultProcesses': { args: []; result: string[] }
+
+  'diag:run': { args: []; result: DiagResult }
+
+  'monitor:start': { args: [intervalMs?: number]; result: void }
+  'monitor:stop': { args: []; result: void }
+  'monitor:isRunning': { args: []; result: boolean }
+  'monitor:history': { args: []; result: MonitorSnapshot[] }
+  'monitor:clear': { args: []; result: void }
 }
 export type Channel = keyof IpcMap
 
