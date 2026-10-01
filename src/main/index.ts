@@ -9,6 +9,9 @@ import { Scheduler } from './scheduler/Scheduler'
 import { BackupManager } from './backup/BackupManager'
 import { DiskAnalyzer } from './disk/DiskAnalyzer'
 import { getExtendedStats, listDrives } from './systemInfo'
+import { flushDns, resetNetwork, releaseRenew } from './network'
+import { scanPrivacy, cleanPrivacy } from './privacy'
+import { listServices, setServiceStartType } from './services'
 
 const startupStore = (): string => join(app.getPath('userData'), 'startup-disabled.json')
 
@@ -63,6 +66,16 @@ function registerIpc(): void {
 
   handle('disk:analyze', (root) => disk.analyze(root))
   handle('disk:listDrives', () => listDrives())
+
+  handle('net:flushDns', () => flushDns())
+  handle('net:reset', () => resetNetwork())
+  handle('net:renew', () => releaseRenew())
+
+  handle('privacy:scan', () => scanPrivacy())
+  handle('privacy:clean', (ids) => cleanPrivacy(ids))
+
+  handle('services:list', () => listServices())
+  handle('services:set', (name, startType) => setServiceStartType(name, startType))
 }
 
 function createWindow(): void {

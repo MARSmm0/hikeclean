@@ -30,7 +30,23 @@ export interface ScheduledTask {
 export interface BackupMeta { id: string; label: string; createdAt: number; files: string[] }
 
 export interface DiskEntry {
-  name: string; path: string; size: number; isDir: boolean; children?: DiskEntry[]
+  name: string
+  path: string
+  size: number
+  isDir: boolean
+  fileCount: number
+  ext?: string
+  color?: string
+  isSystem?: boolean
+  children?: DiskEntry[]
+}
+
+export interface DiskScanResult {
+  root: DiskEntry
+  totalFiles: number
+  totalBytes: number
+  byExt: Array<{ ext: string; bytes: number; count: number; color: string }>
+  topFiles: Array<{ path: string; name: string; size: number; ext: string; color: string; isSystem: boolean }>
 }
 
 export interface ExtendedStats {
@@ -43,6 +59,22 @@ export interface ExtendedStats {
 export interface DriveInfo {
   letter: string; path: string
   totalSize: number; freeSpace: number; usedPercent: number
+}
+
+export interface NetworkActionResult { ok: boolean; message: string }
+
+export interface PrivacyCategory {
+  id: string
+  name: string
+  paths: string[]
+  bytes: number
+}
+
+export interface ServiceInfo {
+  name: string
+  displayName: string
+  status: string
+  startType: string
 }
 
 export interface IpcMap {
@@ -68,8 +100,15 @@ export interface IpcMap {
   'backup:create': { args: [files: string[], label: string]; result: string }
   'backup:restore': { args: [id: string]; result: void }
   'backup:delete': { args: [id: string]; result: void }
-  'disk:analyze': { args: [root: string]; result: DiskEntry }
+  'disk:analyze': { args: [root: string]; result: DiskScanResult }
   'disk:listDrives': { args: []; result: DriveInfo[] }
+  'net:flushDns': { args: []; result: NetworkActionResult }
+  'net:reset': { args: []; result: NetworkActionResult }
+  'net:renew': { args: []; result: NetworkActionResult }
+  'privacy:scan': { args: []; result: PrivacyCategory[] }
+  'privacy:clean': { args: [ids: string[]]; result: { freed: number; failed: number } }
+  'services:list': { args: []; result: ServiceInfo[] }
+  'services:set': { args: [name: string, startType: 'Automatic' | 'Manual' | 'Disabled']; result: void }
 }
 export type Channel = keyof IpcMap
 

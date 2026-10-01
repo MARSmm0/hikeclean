@@ -12,6 +12,9 @@ const allowed: Channel[] = [
   'schedule:list', 'schedule:add', 'schedule:remove',
   'backup:list', 'backup:create', 'backup:restore', 'backup:delete',
   'disk:analyze', 'disk:listDrives',
+  'net:flushDns', 'net:reset', 'net:renew',
+  'privacy:scan', 'privacy:clean',
+  'services:list', 'services:set',
 ]
 
 const api: Api = {

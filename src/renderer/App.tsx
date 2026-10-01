@@ -1,6 +1,6 @@
 // src/renderer/App.tsx
 import { useState } from 'react'
-import { Sidebar, type TabItem } from './components/Sidebar'
+import { Sidebar, type NavGroup, type NavItem } from './components/Sidebar'
 import { Dashboard } from './pages/Dashboard'
 import { Clean } from './pages/Clean'
 import { Processes } from './pages/Processes'
@@ -10,27 +10,70 @@ import { Security } from './pages/Security'
 import { Disk } from './pages/Disk'
 import { Backups } from './pages/Backups'
 import { Settings } from './pages/Settings'
+import { Network } from './pages/Network'
+import { Privacy } from './pages/Privacy'
+import { Services } from './pages/Services'
 
 type Tab =
-  | 'clean' | 'proc' | 'startup' | 'boost' | 'security'
-  | 'disk' | 'backups' | 'settings' | 'home'
+  | 'clean' | 'network' | 'startup' | 'schedule'
+  | 'security' | 'privacy'
+  | 'proc' | 'services' | 'boost'
+  | 'disk'
+  | 'backups'
+  | 'settings' | 'home'
 
-const TABS: TabItem<Tab>[] = [
-  { id: 'clean',    label: 'Очищення',         icon: '✦', group: 'main' },
-  { id: 'proc',     label: 'Процеси',          icon: '☰', group: 'main' },
-  { id: 'startup',  label: 'Автозавантаження', icon: '↻', group: 'main' },
-  { id: 'boost',    label: 'Прискорення',      icon: '↗', group: 'main' },
-  { id: 'security', label: 'Безпека',          icon: '◆', group: 'main' },
-  { id: 'disk',     label: 'Диск',             icon: '▣', group: 'main' },
-  { id: 'backups',  label: 'Бекапи',           icon: '⎘', group: 'main' },
-  { id: 'settings', label: 'Налаштування',     icon: '⚙', group: 'bottom' },
-  { id: 'home',     label: 'Огляд',            icon: '◐', group: 'bottom' },
+const GROUPS: NavGroup<Tab>[] = [
+  {
+    id: 'clean', label: 'Очищення', icon: '✦',
+    items: [
+      { id: 'clean',    label: 'Очищення системи', icon: '✦' },
+      { id: 'network',  label: 'Очищення мережі',  icon: '◈' },
+      { id: 'startup',  label: 'Автозавантаження', icon: '↻' },
+      { id: 'schedule', label: 'Розклади',         icon: '◷' },
+    ],
+  },
+  {
+    id: 'protection', label: 'Захист', icon: '◆',
+    items: [
+      { id: 'security', label: 'Сканер malware',   icon: '◆' },
+      { id: 'privacy',  label: 'Приватність',      icon: '◉' },
+    ],
+  },
+  {
+    id: 'perf', label: 'Продуктивність', icon: '↗',
+    items: [
+      { id: 'proc',     label: 'Процеси',          icon: '☰' },
+      { id: 'services', label: 'Служби Windows',   icon: '⚙' },
+      { id: 'boost',    label: 'Прискорення',      icon: '↗' },
+    ],
+  },
+  {
+    id: 'storage', label: 'Сховище', icon: '▣',
+    items: [
+      { id: 'disk',       label: 'Аналіз диска',    icon: '▣' },
+    ],
+  },
+  {
+    id: 'activity', label: 'Активність', icon: '◷',
+    items: [
+      { id: 'backups',  label: 'Бекапи',            icon: '⎘' },
+    ],
+  },
+]
+
+const BOTTOM: NavItem<Tab>[] = [
+  { id: 'settings', label: 'Налаштування', icon: '⚙' },
+  { id: 'home',     label: 'Огляд',        icon: '◐' },
 ]
 
 const TITLES: Record<Tab, string> = {
-  clean: 'Очищення', proc: 'Процеси', startup: 'Автозавантаження',
-  boost: 'Прискорення', security: 'Безпека', disk: 'Аналіз диска',
-  backups: 'Бекапи', settings: 'Налаштування', home: 'Огляд',
+  home: 'Огляд', clean: 'Очищення системи', network: 'Очищення мережі',
+  startup: 'Автозавантаження', schedule: 'Розклади',
+  security: 'Сканер malware', privacy: 'Приватність',
+  proc: 'Процеси', services: 'Служби Windows', boost: 'Прискорення',
+  disk: 'Аналіз диска',
+  backups: 'Бекапи',
+  settings: 'Налаштування',
 }
 
 export function App() {
@@ -38,18 +81,22 @@ export function App() {
 
   return (
     <div className="app">
-      <Sidebar tabs={TABS} active={tab} onChange={setTab} />
+      <Sidebar groups={GROUPS} bottom={BOTTOM} active={tab} onChange={setTab} />
       <main>
         <h2>{TITLES[tab]}</h2>
-        {tab === 'home'     && <Dashboard onNavigate={(t) => setTab(t as Tab)} />}
-        {tab === 'clean'    && <Clean />}
-        {tab === 'proc'     && <Processes />}
-        {tab === 'startup'  && <Startup />}
-        {tab === 'boost'    && <Boost />}
-        {tab === 'security' && <Security />}
-        {tab === 'disk'     && <Disk />}
-        {tab === 'backups'  && <Backups />}
-        {tab === 'settings' && <Settings />}
+        {tab === 'home'       && <Dashboard onNavigate={(t) => setTab(t as Tab)} />}
+        {tab === 'clean'      && <Clean />}
+        {tab === 'network'    && <Network />}
+        {tab === 'startup'    && <Startup />}
+        {tab === 'schedule'   && <Security />}
+        {tab === 'security'   && <Security />}
+        {tab === 'privacy'    && <Privacy />}
+        {tab === 'proc'       && <Processes />}
+        {tab === 'services'   && <Services />}
+        {tab === 'boost'      && <Boost />}
+        {tab === 'disk'       && <Disk />}
+        {tab === 'backups'    && <Backups />}
+        {tab === 'settings'   && <Settings />}
       </main>
     </div>
   )
